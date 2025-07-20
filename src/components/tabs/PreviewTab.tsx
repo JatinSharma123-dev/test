@@ -172,32 +172,36 @@ const PreviewTab: React.FC = () => {
         line.setAttribute('marker-end', 'url(#arrowhead)');
         mainGroup.appendChild(line);
 
-        // Add condition label if exists
-        if (edge.validationCondition) {
+        // Add visual indicator for edges with conditions (small dot)
+        if (edge.validationCondition && edge.validationCondition.trim()) {
           const midX = (fromX + toX) / 2;
           const midY = (fromY + toY) / 2;
           
-          // Add background rectangle for better text visibility
-          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-          const textLength = edge.validationCondition.length * 6;
-          rect.setAttribute('x', (midX - textLength / 2).toString());
-          rect.setAttribute('y', (midY - 12).toString());
-          rect.setAttribute('width', textLength.toString());
-          rect.setAttribute('height', '16');
-          rect.setAttribute('fill', 'white');
-          rect.setAttribute('stroke', '#E5E7EB');
-          rect.setAttribute('rx', '4');
-          mainGroup.appendChild(rect);
+          const conditionDot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          conditionDot.setAttribute('cx', midX.toString());
+          conditionDot.setAttribute('cy', midY.toString());
+          conditionDot.setAttribute('r', '4');
+          conditionDot.setAttribute('fill', '#F59E0B');
+          conditionDot.setAttribute('stroke', '#FFFFFF');
+          conditionDot.setAttribute('stroke-width', '2');
+          conditionDot.setAttribute('cursor', 'pointer');
+          conditionDot.setAttribute('data-edge-id', edge.id);
+          conditionDot.setAttribute('data-condition', edge.validationCondition);
           
-          const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-          text.setAttribute('x', midX.toString());
-          text.setAttribute('y', (midY - 4).toString());
-          text.setAttribute('text-anchor', 'middle');
-          text.setAttribute('font-size', '12');
-          text.setAttribute('fill', '#6B7280');
-          text.setAttribute('font-family', 'system-ui, sans-serif');
-          text.textContent = edge.validationCondition;
-          mainGroup.appendChild(text);
+          // Add hover effect for condition dot
+          conditionDot.addEventListener('mouseenter', (e) => {
+            const target = e.target as SVGElement;
+            target.setAttribute('r', '6');
+            target.setAttribute('fill', '#D97706');
+          });
+          
+          conditionDot.addEventListener('mouseleave', (e) => {
+            const target = e.target as SVGElement;
+            target.setAttribute('r', '4');
+            target.setAttribute('fill', '#F59E0B');
+          });
+          
+          mainGroup.appendChild(conditionDot);
         }
       }
     });
