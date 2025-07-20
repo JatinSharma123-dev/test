@@ -470,6 +470,20 @@ const PreviewTab: React.FC = () => {
 
           <div className="space-y-6">
             {/* Basic Info */}
+              
+              {/* Tooltip for edge conditions */}
+              {tooltip.visible && (
+                <div
+                  className="absolute bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg pointer-events-none z-10 max-w-xs"
+                  style={{
+                    left: tooltip.x,
+                    top: tooltip.y,
+                    transform: 'translateX(-50%)'
+                  }}
+                >
+                  {tooltip.content}
+                </div>
+              )}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Settings size={16} className="text-gray-500" />
