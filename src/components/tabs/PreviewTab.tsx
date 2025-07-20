@@ -9,6 +9,7 @@ const PreviewTab: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [nodePositions, setNodePositions] = useState<{ [key: string]: { x: number; y: number } }>({});
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, content: '' });
   
   // Pan and zoom state
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
