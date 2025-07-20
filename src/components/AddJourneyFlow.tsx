@@ -50,11 +50,25 @@ const AddJourneyFlowContent: React.FC<{ onBack: () => void; isPreviewOnly?: bool
   };
 
   const handleSave = () => {
+    if (!journey.name.trim()) {
+      alert('Journey name is required before saving');
+      return;
+    }
+    
     setSaveStatus('saving');
-    saveJourney();
-    setSaveStatus('saved');
-    window.location.href = '/';
-    setTimeout(() => setSaveStatus('idle'), 2000);
+    
+    try {
+      saveJourney();
+      setSaveStatus('saved');
+      setTimeout(() => {
+        setSaveStatus('idle');
+        onBack();
+      }, 1500);
+    } catch (error) {
+      console.error('Error saving journey:', error);
+      setSaveStatus('idle');
+      alert('Error saving journey. Please try again.');
+    }
   };
 
   const ActiveComponent = tabs[activeTab].component;

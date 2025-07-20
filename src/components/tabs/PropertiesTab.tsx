@@ -186,13 +186,13 @@ const PropertiesTab: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex gap-2">
                         <button
-                          // onClick={() => handleEdit(property)}
+                          onClick={() => handleEdit(property)}
                           className="text-blue-600 hover:text-blue-900 transition-colors"
                         >
                           <Edit size={16} />
                         </button>
                         <button
-                          // onClick={() => handleDelete(property.id)}
+                          onClick={() => handleDelete(property.id)}
                           className="text-red-600 hover:text-red-900 transition-colors"
                         >
                           <Trash2 size={16} />

@@ -12,8 +12,19 @@ const HomePage: React.FC<HomePageProps> = ({ onEditJourney, onPreviewJourney, on
   const [journeys, setJourneys] = useState<Journey[]>([]);
 
   useEffect(() => {
-    const savedJourneys = JSON.parse(localStorage.getItem('journeys') || '[]');
-    setJourneys(savedJourneys);
+    try {
+      const savedJourneys = JSON.parse(localStorage.getItem('journeys') || '[]');
+      // Ensure dates are properly parsed
+      const parsedJourneys = savedJourneys.map((journey: any) => ({
+        ...journey,
+        createdAt: new Date(journey.createdAt),
+        updatedAt: new Date(journey.updatedAt)
+      }));
+      setJourneys(parsedJourneys);
+    } catch (error) {
+      console.error('Error loading journeys from localStorage:', error);
+      setJourneys([]);
+    }
   }, []);
 
   return (
@@ -40,7 +51,7 @@ const HomePage: React.FC<HomePageProps> = ({ onEditJourney, onPreviewJourney, on
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">{journey.name}</h3>
-                  <p className="text-gray-600 text-sm line-clamp-2">{journey.description}</p>
+                  <p className="text-gray-600 text-sm line-clamp-2">{journey.description || 'No description'}</p>
                 </div>
                 <div className={`px-2 py-1 rounded-full text-xs font-medium ${
                   journey.isActive 
@@ -54,13 +65,11 @@ const HomePage: React.FC<HomePageProps> = ({ onEditJourney, onPreviewJourney, on
               <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
                 <div className="flex items-center gap-1">
                   <Calendar size={14} />
-                  {new Date(journey.createdAt).toLocaleDateString()}
-
+                  Created: {new Date(journey.createdAt).toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-1">
                   <Clock size={14} />
-                  {new Date(journey.updatedAt).toLocaleDateString()}
-
+                  Updated: {new Date(journey.updatedAt).toLocaleDateString()}
                 </div>
               </div>
 

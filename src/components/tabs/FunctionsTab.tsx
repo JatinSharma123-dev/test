@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import { Plus, Edit, Trash2, Save, X } from 'lucide-react';
 import { useJourney } from '../../context/JourneyContext';
-import { Function } from '../../types/journey';
+import { Function, Property } from '../../types/journey';
 import { useMemo } from 'react';
-
-interface FunctionHeader {
-  key: string;
-  type: 'constant' | 'property';
-  value: string;
-}
 
 const FunctionsTab: React.FC = () => {
   const { journey, addFunction, updateFunction, deleteFunction } = useJourney();
@@ -30,7 +24,11 @@ const FunctionsTab: React.FC = () => {
       path: '',
       method: 'GET',
       header_params: {} as { [key: string]: string },
-      headers: [] as FunctionHeader[],
+      headers: [] as Array<{
+        key: string;
+        type: 'constant' | 'property';
+        value: string;
+      }>,
       requestBody: [] as { id: string; apiField: string; property: string }[],
       requestBodyPath: {} as { [key: string]: string }
     },
@@ -109,27 +107,29 @@ const addRequestBodyField = () => {
 // Update requestBody logic to sync with input_properties
 const updateRequestBodyField = (id: string, field: 'apiField' | 'property', value: string) => {
   setFormData(prev => {
-    // Update the requestBody array
     const newRequestBody = prev.config.requestBody.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     );
-    // Build new input_properties from all mapped properties in requestBody
+    
     let newInputProperties = { ...prev.input_properties };
-    // Remove all properties that are mapped in requestBody
-    const mappedProps = new Set(newRequestBody.map(item => item.property).filter(Boolean));
-    // Remove unmapped properties that were previously mapped
-    Object.keys(newInputProperties).forEach(key => {
-      if (!mappedProps.has(key) && prev.config.requestBody.some(item => item.property === key)) {
-        delete newInputProperties[key];
+    
+    // Clear existing request body mappings from input properties
+    prev.config.requestBody.forEach(item => {
+      if (item.property && newInputProperties[item.property]) {
+        delete newInputProperties[item.property];
       }
     });
-    // Add all mapped properties with their type
+    
+    // Add new mappings to input properties
     newRequestBody.forEach(item => {
       if (item.property) {
         const prop = journey.properties.find(p => p.key === item.property);
-        if (prop) newInputProperties[prop.key] = prop.type;
+        if (prop) {
+          newInputProperties[prop.key] = prop.type;
+        }
       }
     });
+    
     return {
       ...prev,
       config: {
@@ -264,6 +264,16 @@ const handleOutputPropertyKeyBlur = (oldKey: string) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.name.trim()) {
+      alert('Function name is required');
+      return;
+    }
+    
+    if (!formData.type) {
+      alert('Function type is required');
+      return;
+    }
+    
     const functionData = {
       ...formData,
       config: {
@@ -318,25 +328,24 @@ const handleOutputPropertyKeyBlur = (oldKey: string) => {
     }));
   };
 
-  const updateHeaderField = (index: number, field: keyof FunctionHeader, value: string) => {
+  const updateHeaderField = (index: number, field: 'key' | 'type' | 'value', value: string) => {
     setFormData(prev => {
       const headers = [...prev.config.headers];
       headers[index] = { ...headers[index], [field]: value };
-      // If type changes, reset value if switching to property
-      if (field === 'type' && value === 'property') {
-        headers[index].value = '';
-      }
 
       let newHeaderParams = { ...prev.config.header_params };
       let newInputProperties = { ...prev.input_properties };
+      
       // If the value field is changed and type is property, update header_params
       if (field === 'value' && headers[index].type === 'property') {
-        // value is property id
         const prop = journey.properties.find(p => p.id === value);
         if (prop) {
           newHeaderParams[prop.key] = prop.type;
           newInputProperties[prop.key] = prop.type;
         }
+      } else if (field === 'type' && value === 'property') {
+        // Reset value when switching to property type
+        headers[index].value = '';
       }
 
       return {
@@ -355,10 +364,10 @@ const handleOutputPropertyKeyBlur = (oldKey: string) => {
     setFormData(prev => {
       const headers = [...prev.config.headers];
       const removedHeader = headers[index];
-      headers.splice(index, 1);
 
       let newHeaderParams = { ...prev.config.header_params };
       let newInputProperties = { ...prev.input_properties };
+      
       if (removedHeader.type === 'property') {
         const prop = journey.properties.find(p => p.id === removedHeader.value);
         if (prop) {
@@ -366,6 +375,8 @@ const handleOutputPropertyKeyBlur = (oldKey: string) => {
           delete newInputProperties[prop.key];
         }
       }
+
+      headers.splice(index, 1);
 
       return {
         ...prev,

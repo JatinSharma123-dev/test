@@ -93,7 +93,29 @@ const NodeFunctionMappingTab: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // console.log(formData);
+    
+    if (!formData.name.trim()) {
+      alert('Mapping name is required');
+      return;
+    }
+    
+    if (!formData.nodeId || !formData.functionId) {
+      alert('Both node and function selection are required');
+      return;
+    }
+    
+    // Check for duplicate mappings
+    const existingMapping = journey.mappings.find(mapping => 
+      mapping.nodeId === formData.nodeId && 
+      mapping.functionId === formData.functionId &&
+      (!editingMapping || mapping.id !== editingMapping.id)
+    );
+    
+    if (existingMapping) {
+      alert('A mapping between this node and function already exists');
+      return;
+    }
+    
     if (editingMapping) {
       updateMapping(editingMapping.id, formData);
     } else {
@@ -117,7 +139,9 @@ const NodeFunctionMappingTab: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    deleteMapping(id);
+    if (window.confirm('Are you sure you want to delete this mapping?')) {
+      deleteMapping(id);
+    }
   };
 
   const getNodeName = (nodeId: string) => {

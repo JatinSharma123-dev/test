@@ -26,6 +26,28 @@ const EdgesTab: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.fromNodeId || !formData.toNodeId) {
+      alert('Both source and target nodes are required');
+      return;
+    }
+    
+    if (formData.fromNodeId === formData.toNodeId) {
+      alert('Source and target nodes cannot be the same');
+      return;
+    }
+    
+    // Check for duplicate edges
+    const existingEdge = journey.edges.find(edge => 
+      edge.fromNodeId === formData.fromNodeId && 
+      edge.toNodeId === formData.toNodeId &&
+      (!editingEdge || edge.id !== editingEdge.id)
+    );
+    
+    if (existingEdge) {
+      alert('An edge between these nodes already exists');
+      return;
+    }
+
     if (editingEdge) {
       updateEdge(editingEdge.id, formData);
     } else {
@@ -46,7 +68,9 @@ const EdgesTab: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    deleteEdge(id);
+    if (window.confirm('Are you sure you want to delete this edge?')) {
+      deleteEdge(id);
+    }
   };
 
   const getNodeName = (nodeId: string) => {

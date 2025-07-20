@@ -28,6 +28,16 @@ const NodesTab: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.name.trim()) {
+      alert('Node name is required');
+      return;
+    }
+    
+    if (!formData.type) {
+      alert('Node type is required');
+      return;
+    }
+    
     if (editingNode) {
       updateNode(editingNode.id, formData);
     } else {
@@ -49,11 +59,9 @@ const NodesTab: React.FC = () => {
   };
 
   const handleDelete = (id: string) => {
-    if (id === 'start' || id === 'end') {
-      return;
+    if (window.confirm('Are you sure you want to delete this node? This will also remove all associated edges and mappings.')) {
+      deleteNode(id);
     }
-    
-    deleteNode(id);
   };
 
   const handlePropertyToggle = (propertyId: string) => {

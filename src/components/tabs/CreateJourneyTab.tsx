@@ -15,39 +15,12 @@ const CreateJourneyTab: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!name.trim()) {
+      alert('Journey name is required');
+      return;
+    }
+    
     updateJourney({ name, description });
-
-
-    //api call
-    
-
-
-    
-    // // Create start and end nodes if they don't exist
-    // const hasStartNode = journey.nodes.some(node => node.type === 'start');
-    // const hasEndNode = journey.nodes.some(node => node.type === 'end');
-    
-    // if (!hasStartNode) {
-    //   addNode({
-    //     name: 'Start',
-    //     type: 'start',
-    //     description: 'Starting point of the journey',
-    //     properties: [],
-    //     x: 100,
-    //     y: 100
-    //   });
-    // }
-    
-    // if (!hasEndNode) {
-    //   addNode({
-    //     name: 'End',
-    //     type: 'end',
-    //     description: 'End point of the journey',
-    //     properties: [],
-    //     x: 500,
-    //     y: 100
-    //   });
-    // }
   };
 
   return (

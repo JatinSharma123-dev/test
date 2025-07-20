@@ -15,12 +15,6 @@ export interface Node {
   y?: number;
 }
 
-export interface FunctionHeader {
-  key: string;
-  type: 'constant' | 'property';
-  value: string;
-}
-
 export interface Function {
   id: string;
   name: string;
@@ -30,7 +24,17 @@ export interface Function {
     path: string;
     method: string;
     header_params: { [key: string]: string };
-    headers: FunctionHeader[];
+    headers: Array<{
+      key: string;
+      type: 'constant' | 'property';
+      value: string;
+    }>;
+    requestBody?: Array<{
+      id: string;
+      apiField: string;
+      property: string;
+    }>;
+    requestBodyPath?: { [key: string]: string };
     [key: string]: any;
   };
   input_properties: { [key: string]: string };

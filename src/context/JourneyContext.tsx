@@ -18,7 +18,7 @@ interface JourneyProviderProps {
 
 export const JourneyProvider: React.FC<JourneyProviderProps> = ({ children, initialJourney }) => {
   const createEmptyJourney = (): Journey => ({
-    id: '',
+    id: Date.now().toString(),
     name: '',
     description: '',
     properties: [],
@@ -62,6 +62,23 @@ export const JourneyProvider: React.FC<JourneyProviderProps> = ({ children, init
       ...prev,
       properties: prev.properties.filter(p => p.id !== id),
       nodes: prev.nodes.map(n => ({ ...n, properties: n.properties.filter(pId => pId !== id) })),
+      // Also clean up function input/output properties that reference this property
+      functions: prev.functions.map(f => {
+        const deletedProperty = prev.properties.find(p => p.id === id);
+        if (!deletedProperty) return f;
+        
+        const newInputProperties = { ...f.input_properties };
+        const newOutputProperties = { ...f.output_properties };
+        
+        delete newInputProperties[deletedProperty.key];
+        delete newOutputProperties[deletedProperty.key];
+        
+        return {
+          ...f,
+          input_properties: newInputProperties,
+          output_properties: newOutputProperties
+        };
+      }),
       updatedAt: new Date()
     }));
   };
@@ -189,16 +206,26 @@ export const JourneyProvider: React.FC<JourneyProviderProps> = ({ children, init
   };
 
   const saveJourney = () => {
+    if (!journey.id) {
+      setJourney(prev => ({ ...prev, id: Date.now().toString() }));
+    }
+    
     const savedJourneys = JSON.parse(localStorage.getItem('journeys') || '[]');
     const existingIndex = savedJourneys.findIndex((j: Journey) => j.id === journey.id);
     
+    const journeyToSave = { ...journey, updatedAt: new Date() };
+    
     if (existingIndex >= 0) {
-      savedJourneys[existingIndex] = journey;
+      savedJourneys[existingIndex] = journeyToSave;
     } else {
-      savedJourneys.push(journey);
+      journeyToSave.id = journeyToSave.id || Date.now().toString();
+      savedJourneys.push(journeyToSave);
     }
     
     localStorage.setItem('journeys', JSON.stringify(savedJourneys));
+    
+    // Update the current journey state with the saved data
+    setJourney(journeyToSave);
   };
 
   const activateJourney = () => {

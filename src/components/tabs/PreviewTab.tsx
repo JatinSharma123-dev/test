@@ -54,8 +54,8 @@ const PreviewTab: React.FC = () => {
       
       return {
         ...node,
-        x: node.x || x,
-        y: node.y || y
+        x: typeof node.x === 'number' ? node.x : x,
+        y: typeof node.y === 'number' ? node.y : y
       };
     });
 
@@ -68,13 +68,15 @@ const PreviewTab: React.FC = () => {
 
     // Draw edges
     const filteredEdges = journey.edges.filter(edge => {
-  const fromNode = journey.nodes.find(n => n.id === edge.fromNodeId);
-  return fromNode && fromNode.type !== 'dead_end';
-});
-filteredEdges.forEach(edge => {
-  const fromNode = nodes.find(n => n.id === edge.fromNodeId);
-  const toNode = nodes.find(n => n.id === edge.toNodeId);
-      // Don't draw edges from dead_end nodes
+      const fromNode = journey.nodes.find(n => n.id === edge.fromNodeId);
+      const toNode = journey.nodes.find(n => n.id === edge.toNodeId);
+      return fromNode && toNode && fromNode.type !== 'dead_end';
+    });
+    
+    filteredEdges.forEach(edge => {
+      const fromNode = nodes.find(n => n.id === edge.fromNodeId);
+      const toNode = nodes.find(n => n.id === edge.toNodeId);
+      
       if (fromNode && toNode) {
         // Draw line
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -91,6 +93,18 @@ filteredEdges.forEach(edge => {
         if (edge.validationCondition) {
           const midX = (fromNode.x + toNode.x) / 2;
           const midY = (fromNode.y + toNode.y) / 2;
+          
+          // Add background rectangle for better text visibility
+          const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+          const textLength = edge.validationCondition.length * 6; // Approximate text width
+          rect.setAttribute('x', (midX - textLength / 2).toString());
+          rect.setAttribute('y', (midY - 12).toString());
+          rect.setAttribute('width', textLength.toString());
+          rect.setAttribute('height', '16');
+          rect.setAttribute('fill', 'white');
+          rect.setAttribute('stroke', '#E5E7EB');
+          rect.setAttribute('rx', '4');
+          svg.appendChild(rect);
           
           const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
           text.setAttribute('x', midX.toString());
@@ -334,7 +348,7 @@ filteredEdges.forEach(edge => {
                 {property!.type}
               </span>
               </div>
-              {property!.validationCondition && (
+              {property!.validationCondition && property!.validationCondition.trim() && (
               <div className="text-xs text-gray-600">
                 <strong>Validation:</strong> {property!.validationCondition}
               </div>
@@ -368,7 +382,7 @@ filteredEdges.forEach(edge => {
                 <div className="text-xs text-gray-600 mb-2">
                   <strong>{func!.config.method}</strong> {func!.config.host}{func!.config.path}
                 </div>
-                {mapping?.condition && (
+                {mapping?.condition && mapping.condition.trim() && (
                   <div className="text-xs text-gray-600 mb-2">
                     <strong>Condition:</strong> {mapping.condition}
                   </div>
@@ -449,7 +463,7 @@ filteredEdges.forEach(edge => {
                   return (
                   <div key={edge.id} className="bg-green-50 rounded p-2 text-sm">
                     <span className="font-medium">{fromNode?.name || 'Unknown'}</span>
-                    {edge.validationCondition && (
+                    {edge.validationCondition && edge.validationCondition.trim() && (
                     <div className="text-xs text-gray-600 mt-1">
                       Condition: {edge.validationCondition}
                     </div>
@@ -470,7 +484,7 @@ filteredEdges.forEach(edge => {
                   return (
                   <div key={edge.id} className="bg-blue-50 rounded p-2 text-sm">
                     <span className="font-medium">{toNode?.name || 'Unknown'}</span>
-                    {edge.validationCondition && (
+                    {edge.validationCondition && edge.validationCondition.trim() && (
                     <div className="text-xs text-gray-600 mt-1">
                       Condition: {edge.validationCondition}
                     </div>
